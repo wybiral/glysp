@@ -125,7 +125,7 @@ func buildRecurse(tokens []interface{}, index int) (E, int) {
 			break
 		} else if token == "{" {
 			x, next := buildRecurse(tokens, index+1)
-			x = append(List{Symbol("hash")}, x.(List)...)
+			x = append(List{Symbol("dict")}, x.(List)...)
 			index = next
 			if mapping {
 				out[len(out)-1] = List{Symbol("list"), out[len(out)-1], x}
