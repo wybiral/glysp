@@ -243,24 +243,28 @@ func InstallBuiltins(s *Scope) {
 
 	s.Set(Symbol("parse"), Macro(MacroParse))
 	s.Set(Symbol("quote"), Macro(MacroQuote))
+	s.Set(Symbol("eval"), Macro(MacroEval))
 
 	s.Set(Symbol("class"), Macro(MacroClass))
 	s.Set(Symbol("setattr"), Macro(MacroSetAttr))
 	s.Set(Symbol("getattr"), Macro(MacroGetAttr))
 
-	s.Set(Symbol("while"), Macro(MacroWhile))
-	s.Set(Symbol("for"), Macro(MacroFor))
-	s.Set(Symbol("go"), Macro(MacroGo))
-	s.Set(Symbol("do"), Macro(MacroDo))
 	s.Set(Symbol("set"), Macro(MacroSet))
-	s.Set(Symbol("fn"), Macro(MacroFn))
-	s.Set(Symbol("func"), Macro(MacroFunc))
-	s.Set(Symbol("if"), Macro(MacroIf))
 
+	s.Set(Symbol("do"), Macro(MacroDo))
+	s.Set(Symbol("if"), Macro(MacroIf))
+	s.Set(Symbol("for"), Macro(MacroFor))
+	s.Set(Symbol("while"), Macro(MacroWhile))
+
+	s.Set(Symbol("go"), Macro(MacroGo))
 	s.Set(Symbol("chan"), Func(FuncChan))
 	s.Set(Symbol("close"), Func(FuncClose))
-	s.Set(Symbol("print"), Func(FuncPrint))
+
+	s.Set(Symbol("fn"), Macro(MacroFn))
+	s.Set(Symbol("func"), Macro(MacroFunc))
+
 	s.Set(Symbol("str"), Func(FuncStr))
+	s.Set(Symbol("print"), Func(FuncPrint))
 
 	s.Set(Symbol("+"), Func(FuncAdd))
 	s.Set(Symbol("-"), Func(FuncSub))
@@ -272,6 +276,7 @@ func InstallBuiltins(s *Scope) {
 
 	s.Set(Symbol("list"), Func(FuncList))
 	s.Set(Symbol("dict"), Func(FuncDict))
-	s.Set(Symbol("eval"), Macro(MacroEval))
+
 	s.Set(Symbol("type"), Func(FuncType))
 }
+
