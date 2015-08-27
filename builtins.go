@@ -213,15 +213,15 @@ func FuncClose(args List) E {
 }
 
 func MacroSetAttr(s *Scope, args List) E {
-	obj := args[0].Eval(s).(*Object)
+	obj := args[0].Eval(s).(SetAttrable)
 	key := args[1].(Symbol)
 	val := args[2].Eval(s)
-	obj.attrs[key] = val
+	obj.SetAttr(key, val)
 	return val
 }
 
 func MacroGetAttr(s *Scope, args List) E {
-	obj := args[0].Eval(s).(*Object)
+	obj := args[0].Eval(s).(GetAttrable)
 	key := args[1].(Symbol)
 	return obj.GetAttr(key)
 }
@@ -279,4 +279,3 @@ func InstallBuiltins(s *Scope) {
 
 	s.Set(Symbol("type"), Func(FuncType))
 }
-

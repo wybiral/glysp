@@ -10,3 +10,4 @@
 (set person (Person "Bob"))
 
 (person.greet)
+

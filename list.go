@@ -30,9 +30,7 @@ func (x List) Iter() Chan {
 }
 
 func (x List) Eval(s *Scope) E {
-	return x[0].Eval(s).(interface {
-		Apply(*Scope, List) E
-	}).Apply(s, x[1:])
+	return x[0].Eval(s).(Applyable).Apply(s, x[1:])
 }
 
 func (x List) Apply(s *Scope, args List) E {

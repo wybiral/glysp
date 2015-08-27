@@ -50,3 +50,7 @@ func (x *Object) GetAttr(key Symbol) E {
 	}
 	return out
 }
+
+func (x *Object) SetAttr(key Symbol, val E) {
+	x.attrs[key] = val
+}

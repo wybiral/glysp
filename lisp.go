@@ -8,11 +8,28 @@ import (
 
 /*
 E is the universal interface for lisp objects. All objects must support Eval.
+
+TODO: E is ambiguous, should be Evalable
 */
 type E interface {
 	Eval(*Scope) E
 }
 
+type Evalable interface {
+	Eval(*Scope) E
+}
+
+type Applyable interface {
+	Apply(*Scope, List) E
+}
+
+type GetAttrable interface {
+	GetAttr(Symbol) E
+}
+
+type SetAttrable interface {
+	SetAttr(Symbol, E)
+}
 
 /*
 TODO: Actual error handling and reporting :)
@@ -72,3 +89,6 @@ func (x *Runtime) EvalScript(filename string) E {
 	return x.Eval(string(code))
 }
 
+func (x *Runtime) InstallFunc(symbol string, fn func(List) E) {
+	x.Global.Set(Symbol(symbol), Func(fn))
+}

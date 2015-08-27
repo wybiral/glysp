@@ -13,9 +13,13 @@ type parserStruct struct {
 }
 
 func typify(token string) E {
-	x, err := strconv.Atoi(token)
+	i, err := strconv.Atoi(token)
 	if err == nil {
-		return Int(x)
+		return Int(i)
+	}
+	f, err := strconv.ParseFloat(token, 64)
+	if err == nil {
+		return Float(f)
 	}
 	if strings.Contains(token, ".") {
 		return DottedSymbol(strings.Split(token, "."))
