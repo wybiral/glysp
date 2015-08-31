@@ -13,18 +13,14 @@ func (x String) Iter() Chan {
 	return ch
 }
 
-func (x String) Repr() E {
+func (x String) Repr() T {
 	return String("\"" + x + "\"")
 }
 
-func (x String) Eval(s *Scope) E {
-	return x
-}
-
-func (x String) Add(y E) E {
+func (x String) Add(y T) T {
 	return x + y.(String)
 }
 
-func (x String) Eq(y E) E {
+func (x String) Eq(y T) T {
 	return Bool(x == y.(String))
 }

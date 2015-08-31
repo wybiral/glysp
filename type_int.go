@@ -3,7 +3,17 @@ package lisp
 // Lisp Int type
 type Int int64
 
-func (x Int) Eval(s *Scope) E { return x }
+func (x Int) Int() Int {
+	return x
+}
+
+func (x Int) Float() Float {
+	return Float(x)
+}
+
+func (x Int) String() String {
+	return String(x)
+}
 
 func (x Int) Iter() Chan {
 	ch := make(Chan)
@@ -16,7 +26,7 @@ func (x Int) Iter() Chan {
 	return ch
 }
 
-func (x Int) Apply(s *Scope, args List) E {
+func (x Int) Apply(s *Scope, args List) T {
 	ch := make(Chan)
 	if len(args) == 0 {
 		ch = x.Iter()
@@ -41,11 +51,11 @@ func (x Int) Apply(s *Scope, args List) E {
 	return ch
 }
 
-func (x Int) Add(y E) E { return x + y.(Int) }
-func (x Int) Sub(y E) E { return x - y.(Int) }
-func (x Int) Mul(y E) E { return x * y.(Int) }
-func (x Int) Div(y E) E { return x / y.(Int) }
+func (x Int) Add(y T) T { return x + y.(Int) }
+func (x Int) Sub(y T) T { return x - y.(Int) }
+func (x Int) Mul(y T) T { return x * y.(Int) }
+func (x Int) Div(y T) T { return x / y.(Int) }
 
-func (x Int) Lt(y E) E { return Bool(x < y.(Int)) }
-func (x Int) Eq(y E) E { return Bool(x == y.(Int)) }
-func (x Int) Gt(y E) E { return Bool(x > y.(Int)) }
+func (x Int) Lt(y T) T { return Bool(x < y.(Int)) }
+func (x Int) Eq(y T) T { return Bool(x == y.(Int)) }
+func (x Int) Gt(y T) T { return Bool(x > y.(Int)) }

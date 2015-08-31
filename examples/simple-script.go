@@ -5,6 +5,9 @@ import (
 )
 
 func main() {
+	// Create new Runtime object
 	runtime := lisp.NewRuntime()
+
+	// Execute script
 	runtime.EvalScript("simple-script.lisp")
 }

@@ -7,4 +7,6 @@ type Method struct {
 
 func (x *Method) String() string { return string(x.name) }
 
-func (x *Method) Eval(s *Scope) E { return x }
+func (x *Method) Apply(s *Scope, args List) T {
+	return x.closure.Apply(s, args)
+}

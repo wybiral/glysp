@@ -1,18 +1,16 @@
 package lisp
 
 // Lisp Chan type
-type Chan chan E
-
-func (x Chan) Eval(s *Scope) E { return x }
+type Chan chan T
 
 func (x Chan) Iter() Chan { return x }
 
-func (x Chan) Apply(s *Scope, args List) E {
+func (x Chan) Apply(s *Scope, args List) T {
 	if len(args) == 0 {
 		return <-x
 	}
 	for _, v := range args {
-		x <- v.Eval(s)
+		x <- v.(Evalable).Eval(s)
 	}
 	return nil
 }

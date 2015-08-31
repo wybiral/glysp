@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type List []E
+type List []T
 
 func (x List) String() string {
 	out := "["
@@ -29,15 +29,18 @@ func (x List) Iter() Chan {
 	return ch
 }
 
-func (x List) Eval(s *Scope) E {
-	return x[0].Eval(s).(Applyable).Apply(s, x[1:])
+/* TODO: Check for Applyable report errors */
+func (x List) Eval(s *Scope) T {
+	fn := Eval(s, x[0])
+	return Apply(s, fn, x[1:])
 }
 
-func (x List) Apply(s *Scope, args List) E {
+func (x List) Apply(s *Scope, args List) T {
+	index := Eval(s, args[0])
 	if len(args) == 1 {
-		return x[args[0].Eval(s).(Int)]
+		return x[index.(Int)]
 	} else if len(args) == 2 {
-		x[args[0].Eval(s).(Int)] = args[1].Eval(s)
+		x[index.(Int)] = Eval(s, args[1])
 	}
 	return nil
 }

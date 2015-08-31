@@ -5,14 +5,14 @@ import (
 	"reflect"
 )
 
-func MacroClassMethod(s *Scope, args List) E {
+func MacroClassMethod(s *Scope, args List) T {
 	name := args[0].(Symbol)
 	closure := MacroFn(s, args[1:])
 	s.scope[name] = &Method{String(name), closure.(*Closure)}
 	return nil
 }
 
-func MacroClass(s *Scope, args List) E {
+func MacroClass(s *Scope, args List) T {
 	s_def := NewScope(s)
 	s_def.scope[Symbol("method")] = Macro(MacroClassMethod)
 	s_cls := NewScope(s_def)
@@ -20,139 +20,127 @@ func MacroClass(s *Scope, args List) E {
 	class := &Class{nil, String(name), s_cls.scope}
 	s.scope[name] = class
 	for _, v := range args[1:] {
-		v.Eval(s_cls)
+		Eval(s_cls, v)
 	}
 	return class
 }
 
-func MacroDo(s *Scope, body List) E {
-	var out E
+func MacroDo(s *Scope, body List) T {
+	var out T
 	for _, v := range body {
-		out = v.Eval(s)
+		out = Eval(s, v)
 	}
 	return out
 }
 
-func MacroFor(s *Scope, args List) E {
-	var out E
+func MacroFor(s *Scope, args List) T {
+	var out T
 	pair := args[0].(List)
 	name := pair[0].(Symbol)
-	iter := pair[1].Eval(s)
+	iter := Eval(s, pair[1])
 	body := args[1:]
 	for x := range iter.(interface {
 		Iter() Chan
 	}).Iter() {
 		s.scope[name] = x
 		for _, expr := range body {
-			out = expr.Eval(s)
+			out = Eval(s, expr)
 		}
 	}
 	return out
 }
 
-func MacroWhile(s *Scope, args List) E {
-	var out E
-	cond := args[0]
-	body := args[1:]
-	for cond.Eval(s).(Bool) {
-		for _, expr := range body {
-			out = expr.Eval(s)
-		}
-	}
-	return out
-}
-
-func MacroGo(s *Scope, args List) E {
+func MacroGo(s *Scope, args List) T {
 	go func() {
 		MacroDo(s, args)
 	}()
 	return nil
 }
 
-func MacroIf(s *Scope, args List) E {
-	if bool(args[0].Eval(s).(Bool)) {
-		return args[1].Eval(s)
+func MacroIf(s *Scope, args List) T {
+	if bool(Eval(s, args[0]).(Bool)) {
+		return Eval(s, args[1])
 	}
-	return args[2].Eval(s)
+	return Eval(s, args[2])
 }
 
-func MacroSet(s *Scope, args List) E {
+func MacroSet(s *Scope, args List) T {
 	obj := args[0].(interface {
-		Apply(*Scope, List) E
+		Apply(*Scope, List) T
 	})
 	obj.Apply(s, args[1:])
 	return nil
 }
 
-func MacroEval(s *Scope, args List) E {
-	var out E
+func MacroEval(s *Scope, args List) T {
+	var out T
 	for _, v := range args {
-		out = v.Eval(s).Eval(s)
+		out = Eval(s, Eval(s, v))
 	}
 	return out
 }
 
-func MacroFn(s *Scope, args List) E {
+func MacroFn(s *Scope, args List) T {
 	return &Closure{s, args[0].(List), args[1:]}
 }
 
-func MacroFunc(s *Scope, args List) E {
+func MacroFunc(s *Scope, args List) T {
 	x := &Closure{s, args[1].(List), args[2:]}
 	s.scope[args[0].(Symbol)] = x
 	return x
 }
 
-func FuncAdd(args List) E {
+func FuncAdd(args ...T) T {
 	out := args[0]
 	for _, v := range args[1:] {
 		out = out.(interface {
-			Add(E) E
+			Add(T) T
 		}).Add(v)
 	}
 	return out
 }
 
-func FuncSub(args List) E {
+func FuncSub(args ...T) T {
 	return args[0].(interface {
-		Sub(E) E
+		Sub(T) T
 	}).Sub(args[1])
 }
 
-func FuncMul(args List) E {
+func FuncMul(args ...T) T {
 	return args[0].(interface {
-		Mul(E) E
+		Mul(T) T
 	}).Mul(args[1])
 }
 
-func FuncDiv(args List) E {
+func FuncDiv(args ...T) T {
 	return args[0].(interface {
-		Div(E) E
+		Div(T) T
 	}).Div(args[1])
 }
 
-func FuncLt(args List) E {
+func FuncLt(args ...T) T {
 	return args[0].(interface {
-		Lt(E) E
+		Lt(T) T
 	}).Lt(args[1])
 }
 
-func FuncEq(args List) E {
+func FuncEq(args ...T) T {
 	return args[0].(interface {
-		Eq(E) E
+		Eq(T) T
 	}).Eq(args[1])
 }
 
-func FuncGt(args List) E {
+func FuncGt(args ...T) T {
 	return args[0].(interface {
-		Gt(E) E
+		Gt(T) T
 	}).Gt(args[1])
 }
 
-func FuncList(args List) E {
-	return args
+func FuncList(args ...T) T {
+	return List(args)
 }
 
-func FuncDict(args List) E {
+func FuncDict(args ...T) T {
 	out := make(Dict)
 	for _, v := range args {
 		pair := v.(List)
@@ -161,7 +149,7 @@ func FuncDict(args List) E {
 	return out
 }
 
-func FuncPrint(args List) E {
+func FuncPrint(args ...T) T {
 	line := ""
 	for _, v := range args {
 		line += fmt.Sprintf("%v", v)
@@ -174,15 +162,15 @@ func FuncPrint(args List) E {
 	return nil
 }
 
-func FuncStr(args List) E {
+func FuncStr(args ...T) T {
 	return String(fmt.Sprintf("%v", args[0]))
 }
 
-func FuncRepr(args List) E {
+func FuncRepr(args ...T) T {
 	return Repr(args[0])
 }
 
-func FuncType(args List) E {
+func FuncType(args ...T) T {
 	var out String
 	switch v := args[0].(type) {
 	case *Object:
@@ -203,41 +191,42 @@ func FuncType(args List) E {
 	return out
 }
 
-func FuncChan(args List) E {
+func FuncChan(args ...T) T {
 	return make(Chan)
 }
 
-func FuncClose(args List) E {
+func FuncClose(args ...T) T {
 	close(args[0].(Chan))
 	return nil
 }
 
-func MacroSetAttr(s *Scope, args List) E {
-	obj := args[0].Eval(s).(SetAttrable)
+func MacroSetAttr(s *Scope, args List) T {
+	obj := Eval(s, args[0]).(SetAttrable)
 	key := args[1].(Symbol)
-	val := args[2].Eval(s)
+	val := Eval(s, args[2])
 	obj.SetAttr(key, val)
 	return val
 }
 
-func MacroGetAttr(s *Scope, args List) E {
-	obj := args[0].Eval(s).(GetAttrable)
+func MacroGetAttr(s *Scope, args List) T {
+	obj := Eval(s, args[0]).(GetAttrable)
 	key := args[1].(Symbol)
 	return obj.GetAttr(key)
 }
 
-func MacroQuote(s *Scope, args List) E {
+func MacroQuote(s *Scope, args List) T {
 	return args[0]
 }
 
-func MacroParse(s *Scope, args List) E {
-	arg := args[0].Eval(s).(String)
+func MacroParse(s *Scope, args List) T {
+	arg := Eval(s, args[0]).(String)
 	out := Parse(string(arg))
-	return out[0].Eval(s)
+	return Eval(s, out[0])
 }
 
 func InstallBuiltins(s *Scope) {
 
+	s.Set(Symbol("nil"), nil)
 	s.Set(Symbol("true"), Bool(true))
 	s.Set(Symbol("false"), Bool(false))
 
@@ -254,7 +243,6 @@ func InstallBuiltins(s *Scope) {
 	s.Set(Symbol("do"), Macro(MacroDo))
 	s.Set(Symbol("if"), Macro(MacroIf))
 	s.Set(Symbol("for"), Macro(MacroFor))
-	s.Set(Symbol("while"), Macro(MacroWhile))
 
 	s.Set(Symbol("go"), Macro(MacroGo))
 	s.Set(Symbol("chan"), Func(FuncChan))

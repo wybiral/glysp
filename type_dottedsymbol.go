@@ -10,17 +10,17 @@ func (x DottedSymbol) String() string {
 	return strings.Join(x, ".")
 }
 
-func (x DottedSymbol) Apply(s *Scope, args List) E {
+func (x DottedSymbol) Apply(s *Scope, args List) T {
 	last := len(x) - 1
-	obj := Symbol(x[0]).Eval(s)
+	obj := Eval(s, Symbol(x[0]))
 	for _, v := range x[1:last] {
 		obj = obj.(GetAttrable).GetAttr(Symbol(v))
 	}
-	obj.(SetAttrable).SetAttr(Symbol(x[last]), args[0].Eval(s))
+	obj.(SetAttrable).SetAttr(Symbol(x[last]), Eval(s, args[0]))
 	return nil
 }
 
-func (x DottedSymbol) Eval(s *Scope) E {
+func (x DottedSymbol) Eval(s *Scope) T {
 	out := Symbol(x[0]).Eval(s)
 	obj := out.(GetAttrable)
 	for _, v := range x[1:] {
@@ -29,7 +29,7 @@ func (x DottedSymbol) Eval(s *Scope) E {
 	}
 	switch v := out.(type) {
 	case *Method:
-		return &BoundMethod{v, obj.(*Object)}
+		return &BoundMethod{v, obj}
 	}
 	return out
 }

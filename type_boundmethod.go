@@ -1,15 +1,19 @@
 package lisp
 
+import (
+	"fmt"
+)
+
 type BoundMethod struct {
-	method   *Method
-	instance *Object
+	method   T
+	instance T
 }
 
-func (x *BoundMethod) Eval(s *Scope) E { return x }
+func (x *BoundMethod) String() string {
+	return fmt.Sprintf("%v", x.method)
+}
 
-func (x *BoundMethod) String() string { return string(x.method.name) }
-
-func (x *BoundMethod) Apply(s *Scope, args List) E {
+func (x *BoundMethod) Apply(s *Scope, args List) T {
 	selfargs := append(List{x.instance}, args...)
-	return x.method.closure.Apply(s, selfargs)
+	return Apply(s, x.method, selfargs)
 }

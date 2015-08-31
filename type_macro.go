@@ -1,9 +1,8 @@
 package lisp
 
 // Lisp Macro type
-type Macro func(*Scope, List) E
+type Macro func(*Scope, List) T
 
-func (x Macro) Eval(s *Scope) E { return x }
-func (x Macro) Apply(s *Scope, args List) E {
+func (x Macro) Apply(s *Scope, args List) T {
 	return x(s, args)
 }

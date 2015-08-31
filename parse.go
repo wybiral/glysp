@@ -12,7 +12,7 @@ type parserStruct struct {
 	index  int
 }
 
-func typify(token string) E {
+func typify(token string) T {
 	i, err := strconv.Atoi(token)
 	if err == nil {
 		return Int(i)
@@ -99,7 +99,7 @@ func parseTokens(code string) []interface{} {
 	return p.tokens
 }
 
-func buildRecurse(tokens []interface{}, index int) (E, int) {
+func buildRecurse(tokens []interface{}, index int) (T, int) {
 	out := make(List, 0)
 	mapping := false
 	for index < len(tokens) {
@@ -143,10 +143,10 @@ func buildRecurse(tokens []interface{}, index int) (E, int) {
 			mapping = true
 		} else {
 			if mapping {
-				out[len(out)-1] = List{Symbol("list"), out[len(out)-1], token.(E)}
+				out[len(out)-1] = List{Symbol("list"), out[len(out)-1], token}
 				mapping = false
 			} else {
-				out = append(out, token.(E))
+				out = append(out, token)
 			}
 		}
 		index++
@@ -154,7 +154,7 @@ func buildRecurse(tokens []interface{}, index int) (E, int) {
 	return out, index
 }
 
-func buildCode(tokens []interface{}) E {
+func buildCode(tokens []interface{}) T {
 	x, _ := buildRecurse(tokens, 0)
 	return x
 }

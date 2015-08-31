@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type Dict map[E]E
+type Dict map[T]T
 
 func (x Dict) Iter() Chan {
 	ch := make(Chan)
@@ -29,13 +29,12 @@ func (x Dict) String() string {
 	return out
 }
 
-func (x Dict) Eval(s *Scope) E { return x }
-
-func (x Dict) Apply(s *Scope, args List) E {
+func (x Dict) Apply(s *Scope, args List) T {
+	key := Eval(s, args[0])
 	if len(args) == 1 {
-		return x[args[0].Eval(s)]
+		return x[key]
 	} else if len(args) == 2 {
-		x[args[0].Eval(s)] = args[1].Eval(s)
+		x[key] = Eval(s, args[1])
 	}
 	return nil
 }

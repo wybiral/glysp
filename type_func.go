@@ -1,13 +1,12 @@
 package lisp
 
 // Lisp Func type
-type Func func(List) E
+type Func func(...T) T
 
-func (x Func) Eval(s *Scope) E { return x }
-func (x Func) Apply(s *Scope, args List) E {
-	temp := make([]E, len(args))
+func (x Func) Apply(s *Scope, args List) T {
+	temp := make([]T, len(args))
 	for i, v := range args {
-		temp[i] = v.Eval(s)
+		temp[i] = Eval(s, v)
 	}
-	return x(temp)
+	return x(temp...)
 }

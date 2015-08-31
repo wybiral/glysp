@@ -6,29 +6,39 @@ import (
 	"os"
 )
 
-/*
-E is the universal interface for lisp objects. All objects must support Eval.
-
-TODO: E is ambiguous, should be Evalable
-*/
-type E interface {
-	Eval(*Scope) E
-}
+/* Just a shorthand for empty interface */
+type T interface{}
 
 type Evalable interface {
-	Eval(*Scope) E
+	Eval(*Scope) T
 }
 
 type Applyable interface {
-	Apply(*Scope, List) E
+	Apply(*Scope, List) T
 }
 
 type GetAttrable interface {
-	GetAttr(Symbol) E
+	GetAttr(Symbol) T
 }
 
 type SetAttrable interface {
-	SetAttr(Symbol, E)
+	SetAttr(Symbol, T)
+}
+
+type Intable interface {
+	Int() Int
+}
+
+type Floatable interface {
+	Float() Float
+}
+
+type Stringable interface {
+	String() String
+}
+
+type Iterable interface {
+	Iter() Chan
 }
 
 /*
@@ -39,13 +49,29 @@ func FatalError(x string) {
 	os.Exit(1)
 }
 
+func Eval(s *Scope, x T) T {
+	switch v := x.(type) {
+	case Evalable:
+		return v.Eval(s)
+	}
+	return x
+}
+
+func Apply(s *Scope, x T, args List) T {
+	switch v := x.(type) {
+	case Applyable:
+		return v.Apply(s, args)
+	}
+	panic(fmt.Sprintf("No apply method for %s", Repr(x)))
+}
+
 /*
 Return representation as String
 */
-func Repr(x E) E {
+func Repr(x T) T {
 	switch v := x.(type) {
 	case interface {
-		Repr() E
+		Repr() T
 	}:
 		return v.Repr()
 	default:
@@ -72,16 +98,16 @@ func NewRuntime() *Runtime {
 /*
 Evaluate some string as code in runtime.
 */
-func (x *Runtime) Eval(code string) E {
+func (x *Runtime) Eval(code string) T {
 	body := Parse(code)
 	body = append(List{Symbol("do")}, body...)
-	return body.Eval(x.Global)
+	return Eval(x.Global, body)
 }
 
 /*
 Evaluate a script file as code in runtime.
 */
-func (x *Runtime) EvalScript(filename string) E {
+func (x *Runtime) EvalScript(filename string) T {
 	code, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic("Error loading script")
@@ -89,6 +115,21 @@ func (x *Runtime) EvalScript(filename string) E {
 	return x.Eval(string(code))
 }
 
-func (x *Runtime) InstallFunc(symbol string, fn func(List) E) {
-	x.Global.Set(Symbol(symbol), Func(fn))
+func (x *Runtime) InstallFunc(symbol string, value T) {
+	var fn Func
+	switch v := value.(type) {
+	case func(...T) T:
+		fn = Func(v)
+	case func(T) T:
+		fn = Func(func(a ...T) T { return v(a[0]) })
+	case func(T, T) T:
+		fn = Func(func(a ...T) T { return v(a[0], a[1]) })
+	case func(T, T, T) T:
+		fn = Func(func(a ...T) T { return v(a[0], a[1], a[2]) })
+	case func(T, T, T, T) T:
+		fn = Func(func(a ...T) T { return v(a[0], a[1], a[2], a[3]) })
+	default:
+		panic("Unable to install: " + symbol)
+	}
+	x.Global.Set(Symbol(symbol), fn)
 }
